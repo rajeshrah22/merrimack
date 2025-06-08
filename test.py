@@ -2,7 +2,7 @@ import socket
 import json
 
 # Define the path to the Unix Domain Socket
-SOCKET_PATH = "/tmp/merrimack.sock"
+SOCKET_PATH = "/tmp/merrimack-config"
 
 # Construct the message
 message = {
