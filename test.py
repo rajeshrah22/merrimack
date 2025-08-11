@@ -1,3 +1,5 @@
+#!/bin/python3
+
 import socket
 import json
 
@@ -7,7 +9,7 @@ SOCKET_PATH = "/tmp/merrimack-config"
 # Construct the message
 message = {
     "interval_minutes": 1,
-    "duration_seconds": 10
+    "duration_seconds": 20
 }
 
 # Serialize to JSON
