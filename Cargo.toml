@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "merrimack-server",
-    "merrimack-client",
+    "merrimackctl",
     "merrimack-common"
 ]
+resolver = "3"

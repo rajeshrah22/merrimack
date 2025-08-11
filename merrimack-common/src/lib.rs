@@ -2,6 +2,6 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Config {
-    pub interval_minutes: u64,
-    pub duration_seconds: u64,
+    pub interval_minutes: i64,
+    pub duration_seconds: i64,
 }

@@ -14,6 +14,9 @@ use nix::{
 };
 
 use merrimack_common::Config;
+use notify_rust::Notification;
+
+const SOCK_PATH: &str = "/tmp/merrimack-config";
 
 fn main() {
     let mut current_config = merrimack_common::Config::default();
@@ -26,7 +29,6 @@ fn main() {
     );
 
     let clockid = ClockId::CLOCK_MONOTONIC;
-    const SOCK_PATH: &str = "/tmp/merrimack-config";
     if let Err(e) = fs::remove_file(SOCK_PATH) {
         eprintln!("Failed to delete socket file: {}", e);
     }
@@ -40,9 +42,7 @@ fn main() {
     let interval_timer_fd = interval_timer.as_fd();
     interval_timer
         .set(
-            Expiration::Interval(TimeSpec::seconds(
-                current_config.interval_minutes as i64 * 60,
-            )),
+            Expiration::Interval(TimeSpec::seconds(current_config.interval_minutes * 60)),
             TimerSetTimeFlags::empty(),
         )
         .unwrap();
@@ -66,6 +66,12 @@ fn main() {
             break_timer.wait().unwrap();
             break_timer.unset().unwrap();
             println!("break done");
+
+            Notification::new()
+                .summary("Break Time Done!")
+                .body("Back to work :)")
+                .show()
+                .unwrap();
         }
 
         // interval timer event
@@ -77,13 +83,20 @@ fn main() {
             interval_timer.wait().unwrap();
             break_timer
                 .set(
-                    Expiration::Interval(TimeSpec::seconds(current_config.duration_seconds as i64)),
+                    Expiration::Interval(TimeSpec::seconds(current_config.duration_seconds)),
                     TimerSetTimeFlags::empty(),
                 )
                 .unwrap();
             println!("break start");
+
+            Notification::new()
+                .summary("Break Time!")
+                .body("Look away from the screen and into nature or towards Christopher Coco.")
+                .show()
+                .unwrap();
         }
 
+        // Configuration socket message
         if pollfds[2]
             .revents()
             .unwrap_or(PollFlags::empty())
@@ -106,11 +119,10 @@ fn main() {
                             current_config.interval_minutes, current_config.duration_seconds
                         );
 
-                        // set new timer
                         interval_timer
                             .set(
                                 Expiration::Interval(TimeSpec::seconds(
-                                    current_config.interval_minutes as i64 * 60,
+                                    current_config.interval_minutes * 60,
                                 )),
                                 TimerSetTimeFlags::empty(),
                             )
