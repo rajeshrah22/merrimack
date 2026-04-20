@@ -1,12 +1,30 @@
-use iced::widget::{center, text};
+use iced::widget::{center, column, container, text};
 use iced::window;
-use iced::{Element, Subscription, Task, time};
+use iced::{Color, Element, Fill, Size, Subscription, Task, time, theme};
 use std::time::Duration;
+
+const OVERLAY_BG: Color = Color {
+    r: 0.0,
+    g: 0.0,
+    b: 0.0,
+    a: 0.85,
+};
+
+const TEXT_COLOR: Color = Color {
+    r: 0.9,
+    g: 0.9,
+    b: 0.9,
+    a: 1.0,
+};
 
 fn main() -> iced::Result {
     iced::daemon(Merrimack::new, Merrimack::update, Merrimack::view)
         .title(Merrimack::title)
         .subscription(Merrimack::subscription)
+        .style(|_state, _theme| theme::Style {
+            background_color: Color::TRANSPARENT,
+            text_color: TEXT_COLOR,
+        })
         .run()
 }
 
@@ -28,8 +46,8 @@ enum Message {
     WindowClosed(window::Id),
 }
 
-const INTERVAL_SECONDS: u64 = 5;
-const BREAK_SECONDS: u64 = 3;
+const INTERVAL_SECONDS: u64 = 10;
+const BREAK_SECONDS: u64 = 5;
 
 impl Merrimack {
     fn new() -> (Self, Task<Message>) {
@@ -44,7 +62,7 @@ impl Merrimack {
     }
 
     fn title(&self, _window: window::Id) -> String {
-        String::from("Merrimack - Take a Break")
+        String::from("Merrimack")
     }
 
     fn update(&mut self, message: Message) -> Task<Message> {
@@ -58,7 +76,14 @@ impl Merrimack {
                             self.state = State::OnBreak;
                             self.seconds_elapsed = 0;
 
-                            let (id, open) = window::open(window::Settings::default());
+                            let (id, open) = window::open(window::Settings {
+                                size: Size::new(1920.0, 1080.0),
+                                decorations: false,
+                                transparent: true,
+                                level: window::Level::AlwaysOnTop,
+                                resizable: false,
+                                ..window::Settings::default()
+                            });
                             self.overlay_window = Some(id);
                             return open.map(Message::WindowOpened);
                         }
@@ -96,11 +121,30 @@ impl Merrimack {
     fn view(&self, _window: window::Id) -> Element<'_, Message> {
         let remaining = BREAK_SECONDS.saturating_sub(self.seconds_elapsed);
 
-        center(
-            text(format!("Take a break!\n\n{} seconds remaining", remaining))
-                .size(40)
-        )
-        .into()
+        let message = text("Look away from the screen.")
+            .size(48)
+            .color(TEXT_COLOR);
+
+        let subtitle = text("Rest your eyes. Stretch a little.")
+            .size(24)
+            .color(Color { a: 0.6, ..TEXT_COLOR });
+
+        let countdown = text(format!("{remaining}"))
+            .size(72)
+            .color(TEXT_COLOR);
+
+        let content = column![message, subtitle, countdown]
+            .spacing(20)
+            .align_x(iced::Center);
+
+        container(center(content))
+            .width(Fill)
+            .height(Fill)
+            .style(|_theme| container::Style {
+                background: Some(OVERLAY_BG.into()),
+                ..container::Style::default()
+            })
+            .into()
     }
 
     fn subscription(&self) -> Subscription<Message> {
