@@ -1,7 +1,7 @@
-[workspace]
-members = [
-    "merrimack-server",
-    "merrimackctl",
-    "merrimack-common"
-]
-resolver = "3"
+[package]
+name = "merrimack"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+iced = { git = "https://github.com/iced-rs/iced.git", rev = "ac1b2c71", features = ["tokio"] }
