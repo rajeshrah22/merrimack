@@ -4,4 +4,5 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+clap = { version = "4", features = ["derive"] }
 iced = { git = "https://github.com/iced-rs/iced.git", rev = "ac1b2c71", features = ["tokio"] }
